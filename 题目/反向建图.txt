@@ -1,0 +1,43 @@
+已知有向图由1~n号编写的n个各不相同的节点构成，求每一个节点能到达的最大编号节点。
+输入描述：第一行输入n、m（1<=n,m<=10^5），分别表示节点数与边数。
+		  第2~m+1行输入a、b，表示节点a可单向到达b
+
+分析：建图时反向建图，即arr[x][y]表示y可到达x，然后从n开始递减dfs，利用bool确定是否被dfs过，如果被dfs过则代表该点以后有更大的选择，不用继续dfs
+
+#include<iostream>
+#include<vector>
+using namespace std;
+int n, m, num;
+vector<int>arr[100001]{};
+bool check[100001]{};
+int answer[100001]{};
+void dfs(int q) {
+	if (!check[q]) {
+		check[q] = 1;
+		if (answer[q] < answer[num]) {
+			answer[q] = answer[num];
+		}
+		for (auto it : arr[q]) {
+			if (!check[it]) {
+				dfs(it);
+			}
+		}
+	}
+}
+int main() {
+	cin >> n >> m;
+	for (int q = 0, a, b; q < m; ++q) {
+		cin >> a >> b;
+		arr[b].push_back(a);
+	}
+	for (int q = 1; q <= n; ++q) {
+		answer[q] = q;
+	}
+	for (num = n; num > 1; --num) {
+		dfs(num);
+	}
+	for (int q = 1; q <= n; ++q) {
+		cout << answer[q] << " ";
+	}
+}
+

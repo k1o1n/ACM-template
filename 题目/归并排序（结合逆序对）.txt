@@ -1,0 +1,51 @@
+给一个长度为n的数组，将其从小到大排序（分治思想）
+ 
+#include<iostream>
+#include<vector> 
+using namespace std;
+vector<long long>arr;
+void sort(int l,int r){
+	if(r-l){
+		if(r-l-1){
+			sort(l,(l+r)/2);
+			sort(1+(l+r)/2,r);
+			vector<int>now;
+			long long i=l,j=1+(l+r)/2,mid=j;
+			while(i<mid&&j<r+1){
+				if(arr[i]>arr[j]){
+					now.push_back(arr[j++]);
+				}
+				else{
+					now.push_back(arr[i++]);
+				}
+			}	
+			while(i<mid){
+				now.push_back(arr[i++]);	
+			}
+			while(j<r+1){
+				now.push_back(arr[j++]);
+			}
+			for(int q=0;q<now.size();++q){
+				arr[q+l]=now[q];
+			}
+		}
+		else{
+			if(arr[l]>arr[r]){
+				arr[r]+=arr[l];
+				arr[l]=arr[r]-arr[l];
+				arr[r]-=arr[l];
+			}
+		}
+	}
+	return;
+} 
+int main(){
+	long long n;
+	cin>>n;
+	for(int q=0,input;q<n;++q){
+		cin>>input;
+		arr.push_back(input);
+	}
+	sort(0,n-1);
+	return 0;
+}

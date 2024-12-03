@@ -1,0 +1,113 @@
+求某棵树上两点u,v的最近公共祖先。(一般来说重链剖分的常数时间要优于倍增算法)
+
+采用树链剖分的方法记录每一个节点所在的链的顶点，然后进行跳跃：
+若两个点的链顶点相同，两个点中深度较小的即为所求
+将两个点中链顶点较深的点跳跃到其链顶点的父节点
+
+#include<iostream>
+#include<map>
+#include<vector>
+#define ll long long
+using namespace std;
+vector<vector<ll>>re;//存储边
+vector<vector<ll>>tree;//存储树
+vector<ll>root;//存储父节点
+vector<ll>len;//存储深度
+vector<ll>num;//存储子树节点数
+vector<bool>check;//建树时的判断
+vector<ll>list_root;//
+vector<ll>memory_p;//某节点下最大的子数
+ll n, s;//n为节点数，s为根节点
+void create(ll p, ll length) {
+	check[p] = true;
+	ll all = 1;
+	len[p] = length;
+	ll memory_now = 0;
+	for (auto it : re[p]) {
+		if (!check[it]) {
+			create(it, length + 1);
+			root[it] = p;
+			tree[p].push_back(it);
+			if (memory_now) {
+				if (num[it] > num[memory_now]) {
+					memory_now = it;
+				}
+			}
+			else {
+				memory_now = it;
+			}
+			all += num[it];
+		}
+	}
+	if (memory_now) {
+		memory_p[p] = memory_now;
+	}
+	num[p] = all;
+}
+void dfs_create(ll p) {
+	if (!tree[p].empty()) {
+		for (auto it : tree[p]) {
+			if (it != memory_p[p]) {
+				list_root[it] = it;
+				dfs_create(it);
+			}
+			else {
+				list_root[it] = list_root[p];
+				dfs_create(it);
+			}
+		}
+	}
+}
+ll lca(ll a, ll b) {
+	if (a == b) {
+		cout << a << endl;
+	}
+	else {
+		if (len[a] > len[b]) {
+			ll temp = a;
+			a = b;
+			b = temp;
+		}
+		while (true) {
+			if (list_root[a] == list_root[b]) {
+				return a;
+			}
+			else {
+				if (len[list_root[a]] > len[list_root[b]]) {
+					a = root[list_root[a]];
+				}
+				else {
+					b = root[list_root[b]];
+				}
+				if (len[a] > len[b]) {
+					ll temp = a;
+					a = b;
+					b = temp;
+				}
+			}
+		}
+	}
+}
+int main() {
+	ios::sync_with_stdio(0);
+	cin.tie(nullptr);
+	cout.tie(nullptr);
+	cin >> n >> s;
+	root.resize(n + 1);
+	len.resize(n + 1);
+	num.resize(n + 1);
+	check.resize(n + 1);
+	list_root.resize(n + 1);
+	tree.resize(n + 1);
+	re.resize(n + 1);
+	memory_p.resize(n + 1);
+	list_root[s] = s;
+	for (ll q = 1, a, b; q < n; ++q) {
+		cin >> a >> b;
+		re[a].push_back(b);
+		re[b].push_back(a);
+	}
+	create(s, 0);//建树
+	root[s] = s;
+	dfs_create(s);//树链剖分
+}

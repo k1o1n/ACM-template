@@ -1,0 +1,42 @@
+用于求解a^x≡b(mod p)，a与p互质的最小正数解
+
+方法：由欧拉定理可知：
+a^x≡a^(x mod f（p）)（mod p）
+可知a^x模p的最小循环节为f（p）
+由于f（p）＜p
+所以在x∈[0，p]的范围内一定能找到最小正数x
+如果暴力枚举，则时间复杂度是o（p）
+故可以考虑优化：
+
+假设x=im-j，其中m=sqrt（p）（向上取整）
+则i∈[1，m]，j∈[0，m-1]
+所求即为a^（im-j）≡b（mod p）
+即（a^m）^i≡ba^j（mod p）
+先枚举j，把（ba^j，j）存入哈希表，如果存在相同的key值，则用更大的j替代（因为答案是im-j，所以j要尽可能的大答案才能尽可能地小）
+然后枚举i，计算（a^m）^i，到哈希表中查找是否有相等的key值，找到第一个即结束，则最小的x=im-j为答案
+
+优化后时间复杂度为o（sqrt（p））
+
+LL bsgs(LL a, LL b, LL p){
+  a %= p; b %= p;
+  if(b == 1) return 0; //x=0
+  LL m = ceil(sqrt(p));
+  LL t = b;
+  unordered_map<int,int> hash;
+  hash[b] = 0;
+  for(int j = 1; j < m; j++){
+    t = t*a%p; //求b*a^j
+    hash[t] = j;
+  }
+  
+  LL mi = 1;
+  for(int i = 1; i <= m; i++)
+    mi = mi*a%p; //求a^m
+  t = 1;
+  for(int i=1; i <= m; i++){
+    t = t*mi%p; //求(a^m)^i
+    if(hash.count(t)) 
+      return i*m-hash[t];
+  }
+  return -1; //无解
+}

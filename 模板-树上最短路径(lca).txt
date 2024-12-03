@@ -1,0 +1,53 @@
+求树上两点u,v的最短路径。
+
+结合lca求解
+
+模板：
+#include<map>
+#define ll long long
+#define lowbit(x) (x&(-x))
+using namespace std;
+map<ll,map<ll,ll>>tree;//树，记录节点的子节点
+map<ll,ll>root;//节点的父节点
+map<ll,ll>len;//节点深度，从1开始计数
+vector<vector<ll>>st;//记录节点的2^n级祖先
+void get_st(point){
+	st[point].push_back(root[point]);//传入point的2^0级祖先
+	for(ll q=1;(1<<q)<len[point];++q){
+		st[point].push_back(st[st[point][i-1]][i-1]);//point的2^i级祖先等于point的2^(i-1)级祖先的2^(i-1)级祖先
+	}
+	for(auto it:tree[point]){
+		get_st(it.first);//dfs搜索point的子节点并完善st表
+	}
+}//获取st表过程,传入的节点为根节点
+ll lca_dist(ll p1,ll p2){
+	if(len[p1]>len[p2]){
+		ll temp=p1;
+		p1=p2;
+		p2=temp;
+	}//将较深的节点调为p2
+	ll dis=len[p2]-len[p1];
+	ll dis1=0,dis2=dis;//记录p1,p2此时走过的路程
+	while(dis){
+		p2=st[p2][__lg(lowbit(dis))];
+		dis-=lowbit(dis);
+	}//调为同级
+	if(p1==p2){
+		return dis2;	
+	}//排除未跳跃就相等的情况
+	while(true){
+		if(root[p1]==root[p2]){
+			return dis1+dis2+2;//找到最近公共祖先
+		}
+		else{
+			ll fin=__lg(len[p1]-1);//最大可跳跃级数
+                	while(stable[p1][fin]==stable[p2][fin]){
+                    		--fin;
+                	}//找到此时最大的可跳跃层数，满足跳跃后两点没有重合
+                	dis1+=(1<<fin);
+                	dis2+=(1<<fin);
+                	p1=stable[p1][fin];
+                	p2=stable[p2][fin];
+		}
+	}
+}//lca过程

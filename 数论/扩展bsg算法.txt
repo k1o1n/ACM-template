@@ -1,0 +1,47 @@
+用于求解a^x≡b（mod p）的最小整数解x，a和p不一定互质
+思路：当a和p不互质时，想方法让他们互质：
+
+原方程变形为a*a^（x-1）+py=b
+假设d1=gcd（a，p）若d1不是b的因子，则无解
+否则方程两边同时除以d1，得a/d1*a^（x-1）≡b/d1（mod p/d1）
+如果a和p/d1仍然不互质就再除
+最终原方程变为a^k/D*a^（x-k）≡b/D（mod p/D）
+D为历次di的乘积，k为除的次数
+最后由于a与p/D互质，a^k/D≡p/D互质，所以a^k/D就存在逆元了，将它移到方程的右边就变成了普通的bsgs问题了，求解x-k再加上k即为最终答案 
+
+LL gcd(LL a, LL b){
+  return b==0?a:gcd(b,a%b);
+}
+LL exbsgs(LL a, LL b, LL p){
+  a %= p; b %= p;
+  if(b==1||p==1)return 0;//x=0
+  
+  LL d, k=0, A=1;
+  while(true){
+    d = gcd(a,p);
+    if(d==1) break;
+    if(b%d) return -1; //无解
+    k++; b/=d; p/=d;
+    A = A*(a/d)%p; //求a^k/D
+    if(A==b) return k;
+  }
+  
+  LL m=ceil(sqrt(p));
+  LL t = b;
+  unordered_map<int,int> hash;
+  hash[b] = 0;
+  for(int j = 1; j < m; j++){
+    t = t*a%p; //求b*a^j
+    hash[t] = j;
+  }
+  LL mi = 1;
+  for(int i = 1; i <= m; i++)
+    mi = mi*a%p; //求a^m
+  t = A;
+  for(int i=1; i <= m; i++){
+    t = t*mi%p; //求(a^m)^i
+    if(hash.count(t)) 
+      return i*m-hash[t]+k;
+  }
+  return -1; //无解
+}

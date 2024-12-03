@@ -1,0 +1,38 @@
+f（n）：小于等于n的与n互质的正整数的个数
+性质：
+	如果n为质数，f（n）=n-1
+	如果p、q均为质数，则f（p*q）=f（p）*f（q）=（p-1）*（q-1）
+	如果p是质数，则f（p^k）=p^k-p^（k-1）
+	f（n）=n（1-1/p1）（1-1/p2）……（1-1/pn），其中p1、p2、……、pn为n的质因子
+	若a为质数，b是a的倍数，则f（a*b）=f（b）*a
+	若a、b互质，则f（a*b）=f（a）*f（b）
+	若a为奇数，则f（2a）=f（a）
+	n=Σ（d|n）f（d）（n的所有因子的欧拉函数和数值上等于n）
+	若a，b不全为0，则f（ab）f（gcd（a，b））=f（a）f（b）gcd（a，b）
+模板：欧拉筛求欧拉函数
+#include<vector>
+#define ll long long
+#define NUMBER 100000
+using namespace std;
+bool prime_check[NUMBER + 1]{};
+ll euler[NUMBER + 1]{};
+vector<ll>prime;
+void work_prime() {
+	for (ll q = 2; q <= NUMBER; ++q) {
+		if (!prime_check[q]) {
+			prime.push_back(q);
+			euler[q] = q - 1;
+		}
+		for (ll i = 0; i < prime.size() && prime[i] * q <= NUMBER; ++i) {
+			prime_check[prime[i] * q] = true;
+			if (q % prime[i]) {
+				euler[prime[i] * q] = euler[prime[i]] * euler[q];
+			}
+			else {
+				euler[prime[i] * q] = euler[q] * prime[i];
+				break;
+			}
+		}
+	}
+	euler[1] = 1;
+}

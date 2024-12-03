@@ -1,0 +1,16 @@
+void floyd(){
+  for(int k=1; k<=n; k++)
+    for(int i=1; i<=n; i++)
+      for(int j=1; j<=n; j++)
+        d[i][j]=min(d[i][j],d[i][k]+d[k][j]);
+}
+floyd可用于求解最小环问题：
+  for(int k=1; k<=n; k++){
+    for(int i=1; i<k; i++)
+      for(int j=i+1; j<k; j++)
+        ans=min(ans,d[i][j]+w[j][k]+w[k][i]);
+    for(int i=1; i<=n; i++)
+      for(int j=1; j<=n; j++)
+        d[i][j]=min(d[i][j],d[i][k]+d[k][j]);
+在更新前先记录
+用floyd算法更新的时间复杂度是n^3可以使用运行n次单源dijkstra来代替，复杂度为n^2logn

@@ -1,0 +1,84 @@
+//注意先要在边数组中加入两条边（因为异或操作会影响，而e[0]是一条中止边，是不能动的）
+#include<iostream>
+#include<vector>
+#include<queue>
+#define ll long long
+using namespace std;
+struct edge {
+	ll en, val, ne;
+	edge(ll _en,ll _val,ll _ne):en(_en),val(_val),ne(_ne){}
+};
+vector<edge>e;
+vector<ll>head;
+vector<ll>cur;
+vector<ll>d;
+ll n, m, s, t;
+void add(ll beg, ll en, ll val) {
+	e.push_back(edge(en, val, head[beg]));
+	head[beg] = e.size() - 1;
+}
+bool bfs() {
+	queue<ll>have;
+	have.push(s);
+	d.clear();
+	d.resize(n + 1);
+	d[s] = 1;
+	while (!have.empty()) {
+		ll pos = have.front();
+		have.pop();
+		for (ll point = head[pos]; point; point = e[point].ne) {
+			if (!d[e[point].en] && e[point].val) {
+				have.push(e[point].en);
+				d[e[point].en] = d[pos] + 1;
+				if (e[point].en == t) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+ll dfs(ll pos, ll mf) {
+	if (pos == t) {
+		return mf;
+	}
+	ll answer = 0;
+	for (ll point = cur[pos]; point; point = e[point].ne) {
+		cur[pos] = point;
+		if (d[e[point].en] == d[pos] + 1 && e[point].val) {
+			ll f = dfs(e[point].en, min(mf, e[point].val));
+			e[point].val -= f;
+			e[point ^ 1].val += f;
+			mf -= f;
+			answer += f;
+			if (!mf) {
+				break;
+			}
+		}
+	}
+	if (!answer) {
+		d[pos] = 0;
+	}
+	return answer;
+}
+ll dinic() {
+	ll answer = 0;
+	while (bfs()) {
+		cur = head;
+		answer += dfs(s, 1e9);
+	}
+	return answer;
+}
+int main() {
+	cin >> n >> m >> s >> t;
+	e.push_back(edge(0, 0, 0));
+	e.push_back(edge(0, 0, 0));
+	head.resize(n + 1);
+	while (m--) {
+		ll u, v, w;
+		cin >> u >> v >> w;
+		add(u, v, w);
+		add(v, u, 0);
+	}
+	cout << dinic() << endl;
+}

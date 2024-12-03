@@ -1,0 +1,109 @@
+定义好串：该字符串中不含有长度超过1的子回文串。
+现在给出一个只含有“red”三种字符的字符串，然后进行若干次操作（有两种操作）：
+1、输入1 x chr：将第x个字符修改为chr（chr必须是r、e、d中的一种）
+2、输入2 l r：询问[l，r]区间子串要修改多少个字符才可以变成一个好串
+
+输入描述：
+第一行输入n、q。n代表字符串长度，q代表操作次数
+第二行输入一个长度为n的字符串
+接下来的q行输入1 x chr或2 l r
+
+数据范围:1<=n,q<=10^5,1<=x<=n,1<=l<=r<=n,chr∈{'r','e','d'}
+
+分析：依题意只有一种情况为好串：
+012012012012012……（即三种字符交替循环出现）
+而012循环形式的组合有六种：“red”、“rde”、“der”、“dre”、“edr”、“erd”
+故只需分别计算某子串有多少位与循环中的字符串不同即可。数据用树状数组维护。
+
+代码
+#include<iostream>
+#include<vector>
+#define ll long long
+#define lowbit(x) (x&(-x))
+using namespace std;
+struct BIT {
+	ll len;
+	vector<ll>tree;
+	vector<ll>pre;
+	BIT() {}
+	BIT(ll _len) {
+		len = _len;
+		tree.resize(len + 1);
+		pre.resize(len + 1);
+	}
+	void plus(ll pos, ll value) {
+		pre[pos] += value;
+		for (; pos <= len; pos += lowbit(pos)) {
+			tree[pos] += value;
+		}
+	}
+	void change(ll pos, ll value) {
+		plus(pos, value - pre[pos]);
+	}
+	ll range(ll pos) {
+		ll sum = 0;
+		for (; pos; pos -= lowbit(pos)) {
+			sum += tree[pos];
+		}
+		return sum;
+	}
+	ll range(ll l, ll r) {
+		return range(r) - range(l - 1);
+	}
+	ll point_value(ll pos) {
+		return pre[pos];
+	}
+};//树状数组模板
+ll n;
+BIT tree[6];
+string a[6]={" red"," rde"," erd"," edr"," dre"," der"};
+string ans;
+void solve(){
+    ll op;
+    cin>>op;
+    if(op==1){
+        ll pos;
+        char x;
+        cin>>pos>>x;
+        for(ll q=0;q<6;++q){
+            if(a[q][pos]==ans[pos]){
+                if(a[q][pos]!=x){
+                    tree[q].change(pos,1);
+                }
+            }
+            else{
+                if(a[q][pos]==x){
+                    tree[q].change(pos,0);
+                }
+            }
+        }
+        ans[pos]=x;
+    }
+    else{
+        ll l,r,answer=1e15;
+        cin>>l>>r;
+        for(ll q=0;q<6;++q){
+            answer=min(answer,tree[q].range(l,r));
+        }
+        cout<<answer<<"\n";
+    }
+}
+int main(){
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr),cout.tie(nullptr);
+    ll q;
+    cin>>n>>q>>ans;
+    ans=" "+ans;
+    for(ll q=0;q<6;++q){
+        for(ll i=4;i<=n;++i){
+            a[q]+=a[q][i-3];
+        }
+        tree[q]=BIT(n);
+        for(ll i=1;i<=n;++i){
+            tree[q].plus(i,(ans[i]!=a[q][i]));
+        }
+    }
+    while(q--){
+        solve();
+    }
+}

@@ -1,0 +1,8 @@
+以下f（x）表示欧拉函数
+欧拉定理：
+	若gcd（a，b）=1，则a^f（b）≡1（mod b）
+扩展欧拉定理：
+	若gcd（a，p）=1，则a^b≡a^[b mod f（p）]（mod p）
+	若gcd（a，p）≠1，则
+		若b<f（p），则a^b≡a^b（mod p）
+		若b≥f（p），则a^b≡a^[b mod f（p）+f（p）]（mod p）

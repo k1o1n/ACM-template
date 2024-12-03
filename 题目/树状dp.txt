@@ -1,0 +1,85 @@
+链接：https://ac.nowcoder.com/acm/contest/73760/E
+来源：牛客网
+小红拿到了一棵树，初始所有节点都是白色。
+小红希望染红若干个节点，使得不存在两个白色节点相邻。
+小红想知道，共有多少种不同的染色方案？
+由于答案过大，请对1e9+7取模。
+输入描述：
+第一行输入一个正整数n，代表节点数量。接下来的n−1行，每行输入两个正整数u,v，代表节点u和点v有一条边连接。
+保证1为根节点，并且保证节点均在1~n内，不存在重复节点编号。
+输出描述：
+一个整数，代表染色的方案数。
+
+分析：定义：
+map<long long, vector<long long>>tree;//表示节点的后继
+long long red[100001]{};//red[n]表示n节点为红色时以n为根的子树排法（求模后）
+long long white[100001]{};//red[n]表示n节点为白色时以n为根的子树排法（求模后）
+bool r_check[100001]{};//true表示red[n]已经计算完毕，可以直接使用
+bool w_check[100001]{};//true表示white[n]已经计算完毕，可以直接使用
+利用递归函数计算red、white数组的所有值
+状态转移：red[n]=((red[a1]+white[a1])%(1e9+7))*((red[a2]+white[a2])%(1e9+7))*……(a1、a2……为节点n的所有后继)
+white[n]=((red[a1])*(red[a2])*……)%(1e9+7)(a1、a2……为节点n的所有后继)
+
+#include<iostream>
+#include<map>
+#include<vector>
+using namespace std;
+const long long pi = 1e9 + 7;
+map<long long, vector<long long>>tree;
+long long red[100001]{};
+long long white[100001]{};
+bool r_check[100001]{};
+bool w_check[100001]{};
+void w(long long k) {
+	if (!w_check[k]) {
+		if (tree.find(k) != tree.end()) {
+			long long plus = 1;
+			for (long long q = 0; q < tree[k].size(); ++q) {
+				if (r_check[tree[k][q]]) {
+					plus = plus * red[tree[k][q]] % pi;
+				}
+				else {
+					w(tree[k][q]);
+					plus = plus * red[tree[k][q]] % pi;
+				}
+			}
+			w_check[k] = true;
+			white[k] = plus;
+		}
+		else {
+			white[k] = 1;
+			w_check[k] = true;
+		}
+	}
+	if (!r_check[k]) {
+		if (tree.find(k) != tree.end()) {
+			long long plus = 1;
+			for (long long q = 0; q < tree[k].size(); ++q) {
+				if (r_check[tree[k][q]] && w_check[tree[k][q]]) {
+					plus = plus * ((red[tree[k][q]] + white[tree[k][q]]) % pi) % pi;
+				}
+				else {
+					w(tree[k][q]);
+					plus = plus * ((red[tree[k][q]] + white[tree[k][q]]) % pi) % pi;
+				}
+			}
+			r_check[k] = true;
+			red[k] = plus;
+		}
+		else {
+			red[k] = 1;
+			r_check[k] = true;
+		}
+	}
+}
+int main() {
+	long long n;
+	cin >> n;
+	for (long long q = 0, a, b; q < n - 1; ++q) {
+		cin >> a >> b;
+		tree[a].push_back(b);
+	}
+	w(1);
+	cout << (red[1] + white[1]) % pi;
+	return 0;
+}

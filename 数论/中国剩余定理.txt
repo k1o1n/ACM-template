@@ -1,0 +1,38 @@
+求解一元线性同余方程组：
+x≡a1（mod n1）
+x≡a2（mod n2）
+……
+x≡ak（mod nk）
+（n1、n2、……、nk两两互质）
+步骤：
+1.计算n=n1n2……nk
+2.对于第i个方程：
+	a.计算mi=n/ni
+	b.计算mi在模ni意义下的逆元ti=（mi）^（-1）
+	c.计算ci=miti（不对ni求模）
+3.该方程在模n意义下的唯一解为x=Σaici
+实现：
+LL CRT(int k, LL* a, LL* r) {
+  LL n = 1, ans = 0;
+  for (int i = 1; i <= k; i++) n = n * r[i];
+  for (int i = 1; i <= k; i++) {
+    LL m = n / r[i], b, y;
+    exgcd(m, r[i], b, y);  // b * m mod r[i] = 1
+    ans = (ans + a[i] * m * b % n) % n;
+  }
+  return (ans % n + n) % n;
+}
+扩展中国剩余定理：
+假设两个方程分别为
+x≡a1（mod n1）
+x≡a2（mod n2）
+将它们转换为不定方程
+x=n1p+a1
+x=n2q+a2
+则n1p-n2q=a2-a1
+用扩展欧几里得定理解出一组可行解（p，q）
+则原来的方程组转换为
+x≡b（mod M）
+其中b=n1p+a1
+M=lcm（m1，m2）
+用上述方法合并所有的同余方程组即可

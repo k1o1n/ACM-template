@@ -1,0 +1,52 @@
+给定两个字符串a、b找出a中是否有b出现。若有则输出匹配的第一个字符的位置（从0开始计数），否则输出-1
+
+分析：生成next数组（可跳过匹配位数），然后计算匹配（线性时间）
+#include<iostream>
+using namespace std;
+void create(string b,int next[]){
+	next[0]=0;
+	int left=0,right=1;
+	while(right<b.length()){
+		if(b[left]==b[right]){
+			next[right++]=next[left++]+1;
+		}
+		else{
+			if(left){
+				left=next[left-1];
+			}
+			else{
+				next[right++]=0;
+			}
+		}
+	}
+}
+int kmp(string a,string b){
+	int*next=new int[b.length()];
+	create(b,next);
+	int i=0,j=0;
+	while(i<a.length()){
+		if(a[i]==b[j]){
+			if(j==b.length()-1){
+				return i-b.length()+1;
+			}
+			else{
+				i++,j++;
+			}
+		}
+		else{
+			if(j){
+				j=next[j-1];
+			}
+			else{
+				++i;
+			}
+		}
+	}
+	return -1;
+}
+int main(){
+	string a,b;
+	cin>>a>>b;
+	cout<<kmp(a,b);
+	return 0;
+} 

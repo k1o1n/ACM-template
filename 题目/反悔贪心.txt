@@ -1,0 +1,58 @@
+Codeforces Round 932 (Div. 2)：C. Messenger in MAC
+题目大意：
+总共有n条信息，p1、p2……pn，描述pi的属性有ai与bi，可以选择k条信息按一定顺序读取信息，假设读取的编号为s1、s2、……sk则读取这些信息的总代价为∑api+∑|bpi−bpi+1|（s1~si的信息）。问在l的代价内能读取的最大信息条数。
+
+输入描述：
+第一行输入t表示测试案例次数
+接下来每次测试第一行输入n、l
+第2~n+1行输入ai、bi
+（1<=n<=2000,1<=l<=10^9,1<=ai,bi<=10^9）
+
+分析：易证当bi按顺序排列时存在最优解，问题则转换为在某区间内a的和的最大值（在范围内）
+反悔贪心：
+用multiset记录已经加入的ai，当此时ai总和超过了范围，丢弃multiset中最大的ai，重复进行
+
+#include<iostream>
+#include<set>
+#include<algorithm>
+#include<vector>
+#define ll long long
+using namespace std;
+struct special {
+	ll a, b;
+	special(){}
+};
+bool way(special a, special b) {
+	return a.b < b.b;
+}
+void solve() {
+	ll n, l, ans = 0;
+	cin >> n >> l;
+	vector<special>arr(n);
+	for (ll q = 0; q < n; ++q) {
+		cin >> arr[q].a >> arr[q].b;
+	}
+	sort(arr.begin(), arr.end(), way);
+	for (ll q = 0; q < n; ++q) {
+		multiset<ll>value;
+		ll now = 0;
+		for (ll i = q; i < n; ++i) {
+			now += arr[i].a;
+			value.insert(arr[i].a);
+			while (!value.empty() && now + arr[i].b - arr[q].b > l) {
+				auto it = value.find(*value.rbegin());
+				now -= *it;
+				value.erase(it);
+			}
+			ans = max(ans, (ll)value.size());
+		}
+	}
+	cout << ans << endl;
+}
+int main() {
+	ll n;
+	cin >> n;
+	while (n--) {
+		solve();
+	}
+}

@@ -1,0 +1,64 @@
+这条河可能看起来像这样。鲁道夫可以选择一行（i,1）,（i,2）,…,（i,m）并在其上建造一座桥。在这一行的每个单元格中，他都可以安装桥的支撑物。在单元格（i,j）中安装支撑物的成本是ai,j+1。支撑物的安装必须满足以下条件：必须在单元格（i,1）中安装一个支撑物；必须在单元格（i,m）中安装一个支撑物；任何一对相邻支撑物之间的距离不得超过d。支撑物（i,j1）和（i,j2）之间的距离是|j1−j2|−1。只建一座桥太无聊了。因此，鲁道夫决定在河流的连续几行上建造k座桥，也就是说，选择某个i（1≤i≤n−k+1），并独立地在每一行i,i+1,…,i+k−1上建造一座桥。帮助鲁道夫最小化安装支撑物的总成本。
+输入
+第一行包含一个整数t（1≤t≤10^3）——测试用例的数量。接下来是测试用例的描述。
+每个测试用例的第一行包含四个整数n、m、k和d（1≤k≤n≤100，3≤m≤2⋅10^5，1≤d≤m）——田地的行数和列数、桥的数量以及支撑物之间的最大距离。
+接下来有n行，第i行包含m个正整数ai,j（0≤ai,j≤10^6，ai,1=ai,m=0）——河流单元格的水深。
+保证所有输入数据集合的n⋅m的总和不超过2⋅10^5。
+输出
+对于每个测试用例，输出一个数字——支撑物安装的最小总成本。
+
+分析：先求出建立每一条桥的最小代价，再用前缀和计算出连续k的最小代价。
+对于每一条桥，应该根据以下思路计算：
+假设要在点o建立支撑物，则能够影响点o的只有点o前的d个点。采用动态规划：
+dp[i]代表在i点存在支撑物并且构建前i个代价最小的值
+由此建立窗口
+dp[i-d]、dp[i-d+1]、……、dp[i]
+每一次都将新的dp值加入到容器multiset中，取其首项作为新的dp值即可得到最小，当窗口移动时要删除离开窗口的值
+
+#include<iostream>
+#include<set>
+#include<vector>
+#define ll long long
+using namespace std;
+ll check[105]{};
+void solve() {
+	ll n, m, k, d, answer = 1e15;
+	cin >> n >> m >> k >> d;
+	for (ll q = 0; q < n; ++q) {
+		vector<ll>v(m);
+		cin >> v[0];
+		v[0]++;
+		multiset<ll>arr;
+		arr.insert(v[0]);
+		vector<ll>dp(m);
+		dp[0] = v[0];
+		for (ll i = 1; i < m - 1; ++i) {
+			cin >> v[i];
+			v[i]++;
+			dp[i] = *arr.begin() + v[i];
+			if (i > d) {
+				arr.erase(arr.find(dp[i - d - 1]));
+			}
+			arr.insert(dp[i]);
+		}
+		cin >> v[0];
+		check[q + 1] = *arr.begin() + 1;
+	}
+	for (ll q = 1; q <= n; ++q) {
+		check[q] += check[q - 1];
+	}
+	for (ll q = 1; q + k - 1 <= n; ++q) {
+		answer = min(answer, check[q + k - 1] - check[q - 1]);
+	}
+	cout << answer << "\n";
+}
+int main() {
+	ios::sync_with_stdio(0);
+	cin.tie(nullptr);
+	cout.tie(nullptr);
+	ll t;
+	cin >> t;
+	while (t--) {
+		solve();
+	}
+}

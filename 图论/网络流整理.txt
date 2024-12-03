@@ -1,0 +1,435 @@
+ek最大流：
+#include<iostream>
+#include<vector>
+#include<queue>
+#define ll long long
+using namespace std;
+struct edge {
+	ll en, ne, c;
+	edge(ll _en,ll _ne,ll _c):en(_en),ne(_ne),c(_c){}
+};
+vector<edge>e;
+vector<ll>head;
+vector<ll>mf;
+vector<ll>pre;
+ll s, t;
+ll n, m;
+ll inf = 1e15;
+void add(ll beg, ll en, ll c) {
+	e.push_back(edge(en, head[beg], c));
+	head[beg] = e.size() - 1;
+}
+bool bfs() {
+	pre.clear();
+	pre.resize(n + 1);
+	mf.clear();
+	mf.resize(n + 1);
+	for (ll q = 1; q <= n; ++q) {
+		mf[q] = inf;
+	}
+	queue<ll>have;
+	vector<bool>check(n + 1);
+	have.push(s);
+	while (!have.empty()) {
+		check[have.front()] = true;
+		for (ll point = head[have.front()]; point; point = e[point].ne) {
+			if (!check[e[point].en] && e[point].c) {
+				pre[e[point].en] = point;
+				check[e[point].en] = true;
+				mf[e[point].en] = min(mf[have.front()], e[point].c);
+				have.push(e[point].en);
+				if (e[point].en == t) {
+					return true;
+				}
+			}
+		}
+		have.pop();
+	}
+	return false;
+}
+ll ek() {
+	ll answer = 0;
+	while (bfs()) {
+		answer += mf[t];
+		for (ll point = t; point != s; point = e[pre[point] ^ 1].en) {
+			e[pre[point]].c -= mf[t];
+			e[pre[point] ^ 1].c += mf[t];
+		}
+	}
+	return answer;
+}
+int main() {
+	cin >> n >> m >> s >> t;
+	head.resize(n + 1);
+	add(0, 0, 0);
+	add(0, 0, 0);
+	for (ll q = 1; q <= m; ++q) {
+		ll u, v, w;
+		cin >> u >> v >> w;
+		add(u, v, w);
+		add(v, u, 0);
+	}
+	cout << ek() << endl;
+}
+dinic最大流：
+#include<iostream>
+#include<vector>
+#include<queue>
+#define ll long long 
+using namespace std;
+struct edge {
+	ll en, ne, c;
+	edge(ll _en,ll _ne,ll _c):en(_en),ne(_ne),c(_c){}
+};
+vector<ll>head;
+vector<edge>e;
+vector<ll>d;
+vector<ll>cur;
+ll s, t;
+ll n, m;
+ll inf = 1e15;
+void add(ll beg, ll en, ll c) {
+	e.push_back(edge(en, head[beg], c));
+	head[beg] = e.size() - 1;
+}
+bool bfs() {
+	d.clear();
+	d.resize(n + 1);
+	queue<ll>have;
+	have.push(s);
+	d[s] = 1;
+	while (!have.empty()) {
+		for (ll point = head[have.front()]; point; point = e[point].ne) {
+			if (!d[e[point].en] && e[point].c) {
+				d[e[point].en] = d[have.front()] + 1;
+				have.push(e[point].en);
+				if (e[point].en == t) {
+					return true;
+				}
+			}
+		}
+		have.pop();
+	}
+	return false;
+}
+ll dfs(ll pos, ll mf) {
+	if (pos == t) {
+		return mf;
+	}
+	ll sum = 0;
+	for (ll point = cur[pos]; point; point = e[point].ne) {
+		cur[pos] = point;
+		if (d[e[point].en] == d[pos] + 1 && e[point].c) {
+			ll f = dfs(e[point].en, min(mf, e[point].c));
+			e[point].c -= f;
+			e[point ^ 1].c += f;
+			sum += f;
+			mf -= f;
+			if (!mf) {
+				break;
+			}
+		}
+	}
+	if (!sum) {
+		d[pos] = 0;
+	}
+	return sum;
+}
+ll dinic() {
+	ll flow = 0;
+	while (bfs()) {
+		cur = head;
+		flow += dfs(s, inf);
+	}
+	return flow;
+}
+int main() {
+	cin >> n >> m >> s >> t;
+	head.resize(n + 1);
+	add(0, 0, 0);
+	add(0, 0, 0);
+	for (ll q = 1; q <= m; ++q) {
+		ll u, v, w;
+		cin >> u >> v >> w;
+		add(u, v, w);
+		add(v, u, 0);
+	}
+	cout << dinic() << endl;
+}
+ek最小费用流：
+#include<iostream>
+#include<vector>
+#include<queue>
+#define ll long long 
+using namespace std;
+struct edge {
+	ll en, ne, c, w;
+	edge(ll _en,ll _ne,ll _c,ll _w):en(_en),ne(_ne),c(_c),w(_w){}
+};
+vector<edge>e;
+vector<ll>head;
+vector<ll>pre;
+vector<ll>mf;
+vector<ll>d;
+ll s, t;
+ll n, m;
+ll inf = 1e15;
+ll flow = 0, cost = 0;
+void add(ll beg, ll en, ll c, ll w) {
+	e.push_back(edge(en, head[beg], c, w));
+	head[beg] = e.size() - 1;
+}
+bool spfa() {
+	pre.clear();
+	pre.resize(n + 1);
+	mf.clear();
+	mf.resize(n + 1);
+	d.clear();
+	d.resize(n + 1);
+	vector<bool>check(n + 1);
+	check[s] = true;
+	for (ll q = 1; q <= n; ++q) {
+		mf[q] = 0;
+		d[q] = inf;
+	}
+	d[s] = 0;
+	mf[s] = inf;
+	check[s] = true;
+	queue<ll>have;
+	have.push(s);
+	while (!have.empty()) {
+		ll u = have.front();
+		have.pop();
+		check[u] = false;
+		for (ll point = head[u]; point; point = e[point].ne) {
+			if (d[e[point].en] > e[point].w + d[u] && e[point].c) {
+				d[e[point].en] = d[u] + e[point].w;
+				mf[e[point].en] = min(mf[u], e[point].c);
+				pre[e[point].en] = point;
+				if (!check[e[point].en]) {
+					check[e[point].en] = true;
+					have.push(e[point].en);
+				}
+			}
+		}
+	}
+	return mf[t] > 0;
+}
+void ek() {
+	while (spfa()) {
+		for (ll point = t; point != s; point = e[pre[point] ^ 1].en) {
+			e[pre[point]].c -= mf[t];
+			e[pre[point] ^ 1].c += mf[t];
+		}
+		flow += mf[t];
+		cost += mf[t] * d[t];
+	}
+}
+int main() {
+	cin >> n >> m >> s >> t;
+	head.resize(n + 1);
+	add(0, 0, 0, 0);
+	add(0, 0, 0, 0);
+	for (ll q = 1; q <= m; ++q) {
+		ll u, v, c, w;
+		cin >> u >> v >> c >> w;
+		add(u, v, c, w);
+		add(v, u, 0, -w);
+	}
+	ek();
+	cout << flow << " " << cost << endl;
+}
+spfa多路增广费用流：
+struct node
+{
+	int x, y, c, cc, next;
+}a[2100000];//数组模拟链表存储边 
+int len = 1, last[210000], maxn = 1e9;
+int vis[210000]; int dis[210000];
+//解释一下各数组的含义：vis两个用处：spfa里的访问标记，増广时候的访问标记，dis是每个点的距离标号
+int n, m, s, t, ans = 0, x, y, c, cc, k;
+//s是起点，t是终点，ans是费用答案
+inline void add(int x, int y, int c, int cc)
+{
+	len++;
+	a[len].x = x; a[len].y = y; a[len].c = c; a[len].cc = cc;
+	a[len].next = last[x]; last[x] = len;
+ 
+	len++;
+	a[len].x = y; a[len].y = x; a[len].c = 0; a[len].cc = -cc;
+	a[len].next = last[y]; last[y] = len;
+ 
+}//建边
+ 
+inline bool spfa(int s, int t)//反向跑最短路，求出距离标号 
+{
+	memset(vis, 0, sizeof(vis));
+	for (int i = 0; i <= n; i++)dis[i] = maxn;
+	vis[t] = 1; dis[t] = 0;
+	//首先SPFA我们维护距离标号的时候要倒着跑，这样可以维护出到终点的最短路径
+	deque<int>p; p.push_back(t);
+	//使用了SPFA的SLF优化
+	while (!p.empty())
+	{
+		int now = p.front(); p.pop_front();
+		for (int k = last[now]; k; k = a[k].next)
+		{
+			if (a[k ^ 1].c > 0)
+				//首先c[k^1]是为什么呢，因为我们要保证正流，但是SPFA是倒着跑的，所以说我们要求c[k]的对应反向边是正的，这样保证走的方向是正确的
+			{
+				int y = a[k].y;
+				if (dis[y] > dis[now] - a[k].cc)
+				{
+					dis[y] = dis[now] - a[k].cc;
+					//因为已经是倒着的了，我们也可以很清楚明白地知道建边的时候反向边的边权是负的，所以减一下就对了（负负得正）
+					if (vis[y] == 0)
+					{
+						vis[y] = 1;
+						if (!p.empty() && dis[y] < dis[now])p.push_front(y);
+						else p.push_back(y);
+						//SLF优化
+					}
+				}
+			}
+		}
+		vis[now] = 0;//队头元素退队，设置为未访问 
+	}
+	if (dis[s] == maxn)return(false);
+	else return(true);
+	//判断起点终点是否连通
+}
+ 
+int dfs(int x, int low)//这里就是进行増广了
+{
+	if (x == t) { vis[t] = 1; return low; }
+	int used = 0, aa; vis[x] = 1;//这边是不是和dinic很像啊
+	for (int k = last[x]; k; k = a[k].next)
+	{
+		int y = a[k].y;
+		if (vis[y] == 0 && a[k].c > 0 && dis[x] - a[k].cc == dis[y])
+			//这个条件就表示这条边可以进行増广
+		{
+			aa = dfs(y, min(a[k].c, low - used));
+			if (aa > 0)ans += aa * a[k].cc, a[k].c -= aa, a[k ^ 1].c += aa, used += aa;
+			//累加答案，加流等操作都在这了
+			if (used == low)break;
+		}
+	}
+	return used;
+}
+ 
+inline int costflow()
+{
+	int flow = 0;
+	while (spfa(s, t))//判断起点终点是否连通，不连通说明满流，做完了退出
+	{
+		vis[t] = 1;
+		while (vis[t])
+		{
+			memset(vis, 0, sizeof(vis));
+			flow += dfs(s, maxn);
+			//一直増广直到走不到为止（这样也可以省时间哦）
+		}
+	}
+	return(flow);//这里返回的是最大流，费用的答案在ans里
+}
+不用spfa的费用流：
+#include <iostream>
+#include <vector>
+#include <cstring>
+#include <queue>
+#define int long long
+using namespace std;
+typedef pair<int, int> PII;
+
+const int N = 1e5 + 10, M = 4e5 + 10;
+const int INF = 1e18;
+
+int h[N], e[M], f[M], w[M], ne[M], idx;
+int dis[N], cur[N];
+int n, m, S, T;
+bool vis[N];
+int height[N];
+vector<int> dot;
+
+void add(int a, int b, int c, int d) {
+    if (idx >= M) {
+        cerr << "Edge index overflow!\n";
+        exit(1);
+    }
+    e[idx] = b, f[idx] = c, w[idx] = d, ne[idx] = h[a], h[a] = idx++;
+    e[idx] = a, f[idx] = 0, w[idx] = -d, ne[idx] = h[b], h[b] = idx++;
+}
+
+bool dijk() {
+    for (auto& i : dot) dis[i] = INF, cur[i] = h[i];
+    priority_queue<PII, vector<PII>, greater<>> pq;
+    dis[S] = 0;
+    pq.emplace(0, S);
+    while (!pq.empty()) {
+        auto [d, u] = pq.top();
+        pq.pop();
+        if (dis[u] != d) continue;
+        for (int i = h[u]; ~i; i = ne[i]) {
+            int v = e[i];
+            if (f[i] && dis[v] > d + height[u] - height[v] + w[i]) {
+                dis[v] = d + height[u] - height[v] + w[i];
+                pq.emplace(dis[v], v);
+            }
+        }
+    }
+    return dis[T] != INF;
+}
+
+int find(int u, int limit) {
+    if (!limit || u == T) return limit;
+    int flow = 0;
+    vis[u] = 1;
+    for (int& i = cur[u]; ~i && flow < limit; i = ne[i]) {
+        int v = e[i];
+        if (dis[v] == dis[u] + height[u] - height[v] + w[i] && f[i] && !vis[v]) {
+            int t = find(v, min(f[i], limit - flow));
+            f[i] -= t, f[i ^ 1] += t, flow += t;
+            if (flow == limit) break;
+        }
+    }
+    vis[u] = 0;
+    return flow;
+}
+
+void mcmf(int& flow, int& cost) {
+    flow = cost = 0;
+    while (dijk()) {
+        int r = find(S, INF);
+        flow += r;
+        for (auto& i : dot) height[i] += dis[i];
+        cost += height[T] * r;
+    }
+}
+
+void solve() {
+    memset(h, -1, sizeof h);
+
+    cin >> n >> m >> S >> T;
+
+
+    for (int i = 1; i <= n; ++i) dot.push_back(i);
+
+    for (int q = 0; q < m; ++q) {
+        int u, v, w, c;
+        cin >> u >> v >> w >> c;
+        add(u, v, w, c);
+    }
+
+    int flow, cost;
+    mcmf(flow, cost);
+    cout << flow << " " << cost << "\n";
+}
+
+signed main() {
+    cin.tie(0)->sync_with_stdio(0);
+    int _ = 1;
+    while (_--) solve();
+    return 0;
+}
+最大费用流：在加边时先加负权再加正权，结果反号输出即可

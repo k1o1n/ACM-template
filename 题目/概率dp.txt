@@ -1,0 +1,56 @@
+小C是一个热爱学习的孩子，但是他却不知道该如何进行高效的学习，浪费了很多的学习时间，因此他每天都学的十分苦恼。在某一天中，小C一共有n门课程可供选择，第i门课程的重要程度为 ，小C的目标是学够重要程度之和不少于m的课程，只有完成目标小C才会停止进行学习。但是小C不知道该按照什么样的顺序进行课程的学习，因此，他决定每次从所有的课程（不论之前是否学过这门课）中随机选择一门来进行一次的学习。也就是说，在一次的学习中，小C会从n门课程中，等概率的选取其中一门课程来进行学习，并且可能会重复学习同一门课程，尽管这样做毫无意义。现在，小C想知道，自己完成这一天的学习目标的期望学习次数是多少（答案四舍五入保留到小数点后6位）。
+
+分析：假设f(sit)代表处于sit状态下还需学习的课程门数（用二进制集合表示）
+则若其中已学门数为cnt，总门数为n，则存在关系：
+f(sit)=(cnt/n)*(f(sit)+1)+Σ(没学的j)(1+f(sit|(1<<j)))/n
+该公式分解：
+有cnt/n的概率学到一门已经学过的
+有1-cnt/n的概率学到一门没学过的
+故得出该式子后使用dp或记忆递推解决
+
+#include<iostream>
+#include<vector>
+#include<map>
+#include<iomanip>
+#define ll long long
+using namespace std;
+ll num(ll q){
+    ll sum=0;
+    while(q){
+        sum+=q&1;
+        q=(q>>1);
+    }
+    return sum;
+}
+ll n,m;
+map<ll,ll>value;
+map<ll,double>goal;
+double f(ll sit,ll sum){
+    ll cnt=num(sit);
+    if(goal.find(sit)==goal.end()){
+        if(sum>=m){
+            goal[sit]=0;
+            return 0;
+        }
+        double answer=1;
+        for(ll q=1;q<=(1<<n)-1;q=(q<<1)){
+            if(!(q&sit)){
+                answer+=f(sit|q,sum+value[q]);
+            }
+        }
+        answer*=(double)n/(double)(n-cnt);
+        goal[sit]=answer;
+        return answer;
+    }
+    else{
+        return goal[sit];
+    }
+}
+int main(){
+    cin>>n>>m;
+    for(ll q=1,input;q<=(1<<n)-1;q=(q<<1)){
+        cin>>input;
+        value[q]=input;
+    }
+    cout<<fixed<<setprecision(6)<<f(0,0);
+}

@@ -1,0 +1,39 @@
+该算法用于解决以下问题：
+ax+by=gcd（a，b）的整数解
+由欧几里得算法可得：
+gcd（a，b）=gcd（b，a%b）
+则存在该方程的解：
+bx1+（a%b）y1=gcd（b，a%b）=gcd（a，b）=ax+by
+化简后可得a%b=a-b[a/b]（[]为向下取整）
+bx1+（a-b[a/b]）y1=ax+by
+化简可得：
+a（y1-x）+b（x1-y-y1[a/b]）=0
+故存在等式
+x=y1
+y=x1-y1[a/b]
+同时，递归结果：当b=0时x=1，y=0即为解，此时通过上述等式可以回溯出最初ax+by=gcd（a，b）的解
+
+long long exgcd(long long a, long long b, long long& x, long long& y) {
+	if (!b) {
+		x = 1;
+		y = 0;
+		return a;
+	}
+	long long gcd = exgcd(b, a % b, y, x);
+	y -= a / b * x;
+	return gcd;
+}
+其返回值是a、b的最大公因数，x，y最后储存该方程的整数解
+
+归结：
+若ax+by=c有解x=x0，y=y0，则其通解可表示为：
+x=x0-bt/gcd（a，b），y=y0+at/gcd（a，b）
+t=（0，1，-1，2，-2，3，-3，……）
+
+故可用ax+by=gcd（a，b）找到解
+然后gcd（a，b）*p=c
+
+则原方程：
+ax+by=gcd（a，b）*p
+ax/p+by/p=gcd（a，b）
+

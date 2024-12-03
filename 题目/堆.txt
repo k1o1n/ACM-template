@@ -1,0 +1,38 @@
+链接：https://ac.nowcoder.com/acm/contest/73810/G
+来源：牛客网
+在本题中，你需要实现一个数据结构，它需要支持以下操作：
+1. 插入：给定整数 x ，将数 x 插入该数据结构中。
+2. 删除：将该数据结构的其中一个最小值从该数据结构中删除。
+3. 加法：给定整数 x ，将该数据结构中的所有元素全部加上 x 。
+对于每个操作 2你需要输出被删除的值。
+#include<iostream>
+#include<set>
+using namespace std;
+long long d = 0;
+multiset<long long>arr;
+void solve() {
+	long long x;
+	cin >> x;
+	if (x == 1) {
+		cin >> x;
+		arr.insert(x - d);
+		return;
+	}
+	if (x == 2) {
+		cout << *arr.begin() << endl;
+		arr.erase(arr.find(*arr.begin()));
+		return;
+	}
+	if (x == 3) {
+		cin >> x;
+		d += x;
+		return;
+	}
+}
+int main() {
+	long long t;
+	cin >> t;
+	while (t--) {
+		solve();
+	}
+}

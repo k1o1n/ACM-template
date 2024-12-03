@@ -1,0 +1,55 @@
+1、口袋里只剩 M 元 (M≤10000)。餐馆虽低端，但是菜品种类不少，有 N 种(N≤100)，第 i 种卖ai​元 (ai​≤1000)。由于是很低端的餐馆，所以每种菜只有一份。小 A 奉行“不把钱吃光不罢休”，所以他点单一定刚好把 uim 身上所有钱花完。他想知道有多少种点菜方法。由于小 A 肚子太饿，所以最多只能等待 
+输入格式
+第一行是两个数字，表示 N 和 M。
+第二行起N 个正数ai（可以有相同的数字，每个数字均在1000 以内）。
+输出格式
+一个正整数，表示点菜方案数，保证答案的范围在 int 之内。
+
+#include<iostream>
+using namespace std;
+int price[10010]{};
+int main() {
+	int m, n;
+	cin >> n >> m;
+	price[0] = 1;
+	for (int q = 0, p; q < n; ++q) {
+		cin >> p;
+		for (int i = m; i >= p; --i) {
+			price[i] += price[i - p];
+		}
+	}
+	cout << price[m];
+}
+
+2、金明今天很开心，家里购置的新房就要领钥匙了，新房里有一间他自己专用的很宽敞的房间。更让他高兴的是，妈妈昨天对他说：“你的房间需要购买哪些物品，怎么布置，你说了算，只要不超过 N 元钱就行”。今天一早金明就开始做预算，但是他想买的东西太多了，肯定会超过妈妈限定的 N 元。于是，他把每件物品规定了一个重要度，分为5 等：用整数1−5表示，第 5 等最重要。他还从因特网上查到了每件物品的价格（都是整数元）。他希望在不超过 
+N 元（可以等于N 元）的前提下，使每件物品的价格与重要度的乘积的总和最大。请你帮助金明设计一个满足要求的购物单。
+输入格式
+第一行，为2 个正整数，用一个空格隔开：n,m（n<30000,m<25）其中n表示总钱数，m 为希望购买物品的个数。
+从第2行到第m+1 行，每行输入v、p（v≤10000，1≤p≤5），v为价格、p为重要度
+
+#include<iostream>
+using namespace std;
+long long dp[30010]{};
+int main() {
+	long long n, m;
+	cin >> n >> m;
+	for (long long q = 0; q < 30010; ++q) {
+		dp[q] = 0;
+	}
+	for (long long q = 0, weight, value; q < m; ++q) {
+		cin >> weight >> value;
+		value *= weight;
+		for (long long i = n; i >= weight; --i) {
+			if (dp[i] < dp[i - weight] + value) {
+				dp[i] = dp[i - weight] + value;
+			}
+		}
+	}
+	for (long long q = 1; q <= n; ++q) {
+		if (dp[q] < dp[q - 1]) {
+			dp[q] = dp[q - 1];
+		}
+	}
+	cout << dp[n];
+}
+（01背包的滚动是从大到小，完全背包则是从小到大）

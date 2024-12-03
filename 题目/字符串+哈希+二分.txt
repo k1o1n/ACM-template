@@ -1,0 +1,99 @@
+给两个字符串a、b要求比较二者某些长度相同的子串的字典序
+
+分析：先给字符串a、b进行哈希处理，再用二分方法比较。
+
+#include<iostream>
+#include<vector>
+#define ll long long
+using namespace std;
+const ll p1=1e9+7;
+const ll p2=998244353;
+const ll base=97;
+struct Hash{
+    ll n;
+    vector<ll>arr;
+    vector<ll>pwa;
+    vector<ll>brr;
+    vector<ll>pwb;
+    Hash(string a){
+        n=a.length();
+        arr.resize(n+1);
+        brr.resize(n+1);
+        pwa.resize(n+1);
+        pwb.resize(n+1);
+        pwa[0]=pwb[0]=1;
+        for(ll q=1;q<=n;++q){
+            arr[q]=(arr[q-1]*base%p1+a[q]-'a'+1)%p1;
+            brr[q]=(brr[q-1]*base%p2+a[q]-'a'+1)%p2;
+            pwa[q]=pwa[q-1]*base%p1;
+            pwb[q]=pwb[q-1]*base%p2;
+        }
+    }
+    pair<ll,ll> gethash(ll l, ll r){
+        return {((arr[r]-arr[l-1]*pwa[r-l+1])%p1+p1)%p1,((brr[r]-brr[l-1]*pwb[r-l+1])%p2+p2)%p2};
+    }
+    Hash(){}
+};
+string a,b;
+Hash ca,cb;
+int main(){
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+    ll n,m,q;
+    cin>>n>>m>>q>>a>>b;
+    a=" "+a;
+    b=" "+b;
+    ca=Hash(a);
+    cb=Hash(b);
+    while(q--){
+        ll l1,r1,l2,r2;
+        cin>>l1>>r1>>l2>>r2;
+        if(ca.gethash(l1,r1)==cb.gethash(l2,r2)){
+            cout<<"=\n";
+        }
+        else{
+            ll m1,m2,L1=l1,L2=l2,R1=r1,R2=r2;
+            while(true){
+                m1=(L1+R1)>>1;
+                m2=(L2+R2)>>1;
+                if(L1==R1){
+                    if(a[L1]<b[L2]){
+                        cout<<"<\n";
+                    }
+                    else{
+                        cout<<">\n";
+                    }
+                    break;
+                }
+                if(L1+1==R1){
+                    if(a[L1]<b[L2]){
+                        cout<<"<\n";
+                    }
+                    else{
+                        if(a[L1]>b[L2]){
+                            cout<<">\n";
+                        }
+                        else{
+                            if(a[R1]<b[R2]){
+                                cout<<"<\n";
+                            }
+                            else{
+                                cout<<">\n";
+                            }
+                        }
+                    }
+                    break;
+                }
+                if(ca.gethash(L1,m1)==cb.gethash(L2,m2)){
+                    L1=m1+1;
+                    L2=m2+1;
+                }
+                else{
+                    R1=m1;
+                    R2=m2;
+                }
+            }
+        }
+    }
+}

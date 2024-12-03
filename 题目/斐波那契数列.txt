@@ -1,0 +1,31 @@
+输入正整数n，输出斐波那契数列的第n项(答案对1e9+7取模)
+
+分析：设f（x）代表斐波那契数列的第n项，则：
+f(2n)=f(n)*(f(n-1)+f(n+1))
+f(2n+1)=f(n+1)*f(n+1)+f(n)*f(n)
+
+#include<iostream>
+#include<map>
+using namespace std;
+map<long long,long long>check;
+const long long pi=1e9+7;
+long long f(long long n){
+    if(check.find(n)==check.end()){
+        long long t=n/2;
+        if(n%2){
+            check[n]=((f(t+1)*f(t+1))%pi+(f(t)*f(t))%pi)%pi;
+        }
+        else{
+            check[n]=(f(t)*(f(t-1)+f(t+1))%pi)%pi;
+        }
+        return check[n];
+    }
+    else{
+        return check[n];
+    }
+}
+int main(){
+	long long n;
+	cin>>n;
+	cout<<f(n);
+}

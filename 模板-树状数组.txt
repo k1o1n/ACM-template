@@ -1,0 +1,38 @@
+实现单点修改、区间求和
+struct BIT {
+#define ll long long
+#define lowbit(x) (x&(-x))
+	ll len;
+	vector<ll>tree;
+	vector<ll>pre;
+	BIT() {}
+	BIT(ll _len) {
+		len = _len;
+		tree.resize(len + 1);
+		pre.resize(len + 1);
+	}
+	void plus(ll pos, ll value) {
+		pre[pos] += value;
+		for (; pos <= len; pos += lowbit(pos)) {
+			tree[pos] += value;
+		}
+	}
+	void change(ll pos, ll value) {
+		plus(pos, value - pre[pos]);
+	}
+	ll range(ll pos) {
+		ll sum = 0;
+		for (; pos; pos -= lowbit(pos)) {
+			sum += tree[pos];
+		}
+		return sum;
+	}
+	ll range(ll l, ll r) {
+		return range(r) - range(l - 1);
+	}
+	ll point_value(ll pos) {
+		return pre[pos];
+	}
+#undef ll
+#undef lowbit
+};

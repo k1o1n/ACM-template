@@ -1,0 +1,65 @@
+小红种了n个树，第i棵树第一天的高度是ai，小红可以设定每天每棵树增长的高度（但对于一棵树而言，其每天生长的速度必须相同）。现在小红希望最终在达到每棵树的高度相同，且这个高度不能超过m，请你告诉小红有多少种不同的生长高度设定方案。注：每天每棵树生长的高度必须是整数！
+输入描述:
+第一行输入两个正整数n,m，代表树的数量和高度的限制。
+第二行输入n个正整数ai​，代表每棵树初始的高度。保证初始高度不全相同。
+2<=n<=1e5
+1<=ai<=m<=1e6
+输出描述:
+输出一个整数，代表生长高度设定的方案数。
+
+分析：
+假设最后的高度为x，则天数最多为：
+gcd(x-a1,x-a2,……,x-an)
+根据区间gcd的性质：
+gcd(a,b,c,d,……,z)=gcd(a,b-a,c-b,……,z-y)
+可知：
+gcd(x-arr[1],x-arr[2],……,x-arr[n])=gcd(x-a1,a1-a2,a2-a3,……,a(n-1)-an)
+若假设check=gcd(a1-a2,a2-a3,……,a(n-1)-an)
+则上述式子可化为：
+gcd(x-a1,check)
+而根据题意check的值为常量，可以预处理得到，故可以得到以下结论：
+当最后的高度为x时，方案的数量则为gcd(x-a1,check)的因子数量（当值为0时有一个）
+所以解法如下：
+将a1~an按大到小排序（避免计算check值时出现负值）
+计算check值
+将最后高度从m到a1枚举，计算对应的gcd(x-a1,check)的因子数量
+
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#define ll long long 
+using namespace std;
+ll gcd(ll a,ll b){
+    return b?gcd(b,a%b):a;
+}
+int main(){
+    ll n,m,check,answer=0;
+    cin>>n>>m;
+    vector<ll>arr(n);
+    for(ll q=0;q<n;++q){
+        cin>>arr[q];
+    }
+    sort(arr.rbegin(),arr.rend());
+    check=arr[0]-arr[1];
+    for(ll q=1;q<arr.size()-1;++q){
+        check=gcd(check,arr[q]-arr[q+1]);
+    }
+    while(m>=arr[0]){
+        ll memory=gcd(m-arr[0],check);
+        if(memory==0||memory==1){
+            answer+=1;
+        }
+        else{
+            for(ll q=1;q*q<=memory;++q){
+                if(!(memory%q)){
+                    if(memory/q==q){
+                        --answer;
+                    }
+                    answer+=2;
+                }
+            }   
+        }
+        --m;
+    }
+    cout<<answer;
+}

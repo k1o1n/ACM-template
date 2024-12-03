@@ -1,0 +1,63 @@
+给定t、a、m，求令（ax+t-1）%m最小的绝对值最小的x的绝对值
+
+假设最小值（ax+t-1）%m=ans
+则my+ans=（ax+t-1）
+即ax-my=ans-t+1
+可知此方程若有解
+则（ans-t+1）%gcd（a，m）=0
+即ans%gcd（a，m）=（t-1）%gcd（a，m）
+故ans=gcd（a，m）*k+（t-1）%gcd（a，m）
+k取0时ans最小
+所以ans=（t-1）%gcd（a，m）
+带入原式子得到
+ax-my=（t-1）%gcd（a，m）-t+1
+故先用ax+my=gcd（a，m）计算出一组解
+然后将x扩大[（t-1）%gcd（a，m）-t+1]/gcd（a，m）倍得到x的一个可能解
+由扩展欧拉定理可知：
+若ax+by=c的一个解为x=x0，y=y0
+则其通解为
+x=x0-bp/gcd（a，b）
+y=y0+ap/gcd（a，b）
+对应到上述x
+则可通过dx计算出结果
+
+#include<iostream>
+#define ll long long
+using namespace std;
+ll x,y;
+ll exgcd(ll a, ll b, ll &x, ll &y){
+    if(b == 0){
+        x = 1;
+        y = 0;
+        return a;
+    }
+    ll d = exgcd(b, a % b, x, y);
+    ll t = x;
+    x = y;
+    y = t - (a / b) * y;
+    return d;
+}
+void solve(){
+    ll t,a,m;
+    cin>>t>>a>>m;
+    ll k=exgcd(a,m,x,y);
+    ll ans=(t-1)%k-t+1;
+    if(ans<0){
+        x=-x;
+        ans=-ans;
+    }
+    x*=ans/k;
+    ll dx=abs(m/k);
+    if(x<0){
+        x+=((-x)/dx+1)*dx;
+    }
+    x-=x/dx*dx;
+    cout<<min(abs(x-dx),x)<<endl;
+}
+int main(){
+    ll t;
+    cin>>t;
+    while(t--){
+        solve();
+    }
+}

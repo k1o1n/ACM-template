@@ -1,0 +1,110 @@
+给定一个n*m的矩阵，要求求出从（1，1）到（n，m）的最大的与值（即将经过的点的值全部用与运算得出的结果）
+
+分析：
+拆位思想，从二进制下最高位开始向低位运算，直走该位上有1的点（即一位一位决定该位，从最高位到最低位）
+
+#include<iostream>
+#include<vector>
+#define ll long long
+using namespace std;
+ll n,m,ans=0,sit,answer=0;
+ll d_x[4]={0,0,1,-1};
+ll d_y[4]={1,-1,0,0};
+vector<vector<bool>>check;
+vector<vector<ll>>arr;
+vector<vector<bool>>work;
+bool ask=false;
+void dfs(ll x,ll y){
+    if(arr[x][y]&(1<<sit)){
+        work[x][y]=true;
+        if(x!=n-1||y!=m-1){
+            for(ll q=0;q<4;++q){
+                ll xx=d_x[q]+x;
+                ll yy=d_y[q]+y;
+                if(xx>=0&&xx<n&&yy>=0&&yy<m){
+                    if(!work[xx][yy]&&(arr[xx][yy]&(1<<sit))){
+                        if(ask){
+                            if(check[xx][yy]){
+                                dfs(xx,yy);       
+                            }
+                        }
+                        else{
+                            dfs(xx,yy);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+void get(ll x,ll y,ll num){
+    if(check[x][y]){
+        num&=arr[x][y];
+        work[x][y]=true;
+        if(x!=n-1||y!=m-1){
+            for(ll q=0;q<4;++q){
+                ll xx=x+d_x[q];
+                ll yy=y+d_y[q];
+                if(xx>=0&&xx<n&&yy>=0&&yy<m){
+                    if(check[xx][yy]&&!work[xx][yy]){
+                        get(xx,yy,num);
+                    }
+                }
+            }
+        }
+        else{
+            answer=max(answer,num);
+        }
+    }
+}
+int main(){
+    cin>>n>>m;
+    arr.resize(n);
+    check.resize(n);
+    work.resize(n);
+    for(ll q=0;q<n;++q){
+        arr[q].resize(m);
+        check[q].resize(m);
+        work[q].resize(m);
+        for(ll i=0;i<m;++i){
+            cin>>arr[q][i];
+        }
+    }
+    for(ll q=31;q>=0;--q){
+        for(ll x=0;x<n;++x){
+            for(ll y=0;y<m;++y){
+                work[x][y]=false;
+            }
+        }
+        sit=q;
+        dfs(0,0);
+        if(work[n-1][m-1]){
+            if(ask){
+                for(ll q=0;q<n;++q){
+                    for(ll i=0;i<m;++i){
+                        check[q][i]=(work[q][i]&check[q][i]);
+                    }
+                }
+            }
+            else{
+                for(ll q=0;q<n;++q){
+                    for(ll i=0;i<m;++i){
+                        check[q][i]=work[q][i];
+                    }
+                }
+            }
+            ask=true;
+        }
+    }
+    for(ll q=0;q<n;++q){
+        for(ll i=0;i<m;++i){
+            work[q][i]=false;
+        }
+    }
+    get(0,0,arr[0][0]);
+    if(!check[0][0]){
+        cout<<0;
+        return 0;
+    }
+    cout<<answer;
+}

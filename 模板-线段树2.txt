@@ -1,0 +1,77 @@
+#include<iostream>
+using namespace std;
+using LL=long long;
+#define endl '\n'
+#define lc u<<1
+#define rc u<<1|1
+LL n,m;
+const int N=1e5+10;
+struct tree{
+	LL l,r,sum,tag;
+}tr[N*4];
+LL w[N];
+void pushup(LL u){
+	tr[u].sum=tr[lc].sum+tr[rc].sum;
+}
+void pushdown(LL u){
+	if(tr[u].tag){
+		tr[lc].sum+=tr[u].tag*(tr[lc].r-tr[lc].l+1);
+		tr[rc].sum+=tr[u].tag*(tr[rc].r-tr[rc].l+1);
+		tr[lc].tag+=tr[u].tag;
+		tr[rc].tag+=tr[u].tag;
+		tr[u].tag=0;
+	}
+}
+void update(LL u,LL l,LL r,LL k){
+	if(l<=tr[u].l&&tr[u].r<=r){
+		tr[u].sum+=k*(tr[u].r-tr[u].l+1);
+		tr[u].tag+=k;
+		return;
+	}
+	pushdown(u);
+	LL m=(tr[u].l+tr[u].r)>>1;
+	if(l<=m) update(lc,l,r,k);
+	if(r>m) update(rc,l,r,k);
+	pushup(u);
+}
+void build(LL u,LL l,LL r){
+	tr[u]={l,r};
+	if(l==r){
+		tr[u].sum=w[l];return;
+	}
+	LL m=(l+r)>>1;
+	build(lc,l,m);
+	build(rc,m+1,r);
+	pushup(u);
+}
+LL query(LL u,LL l,LL r){
+	if(l<=tr[u].l&&tr[u].r<=r) return tr[u].sum;
+	pushdown(u);
+	LL sum=0;
+	LL m=(tr[u].l+tr[u].r)>>1;
+	if(l<=m) sum+=query(lc,l,r);
+	if(r>m) sum+=query(rc,l,r);
+	return sum;
+}
+
+int main(){
+    ios::sync_with_stdio(0),cin.tie(0),cout.tie(0);
+    cin>>n>>m;
+    for(int i=1;i<=n;++i) cin>>w[i];
+    build(1,1,n);
+    while(m--){
+    	LL op,a,b,k;
+    	cin>>op;
+    	if(op==1){
+    		cin>>a>>b>>k;
+    		update(1,a,b,k);
+    	}
+    	else {
+    		cin>>a>>b;cout<<query(1,a,b)<<endl;
+    	}
+    }
+    	
+
+	return 0;
+
+}

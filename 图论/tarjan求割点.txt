@@ -1,0 +1,73 @@
+割点：无向图中去除该点以及相关边后连通块数量增加的点
+利用tarjan算法
+若某个点不是搜索树的根节点，则若存在子节点的low值大于等于该点的dfn值则该点为割点
+若该点为搜索树根节点，则要求至少存在上述子节点两个成立
+强连通分量：有向图中可以互相到达的点对或点集
+可以用tarjan求最大环：
+示例：（scc值相同的即可互相到达）
+#include<iostream>
+#include<vector>
+#include<stack>
+#include<map>
+#define ll long long
+using namespace std;
+vector<vector<ll>>link;
+vector<ll>low;
+vector<ll>dfn;
+vector<ll>scc;
+vector<bool>cut;
+vector<bool>check;
+stack<ll>in;
+ll num = 0;
+ll n, m;
+ll root;
+void tarjan(ll pos) {
+	ll child = 0;
+	low[pos] = dfn[pos] = ++num;
+	in.push(pos);
+	for (auto point : link[pos]) {
+		if (dfn[point]) {
+			if (!check[point]) {
+				low[pos] = min(low[pos], dfn[point]);
+			}
+		}
+		else {
+			tarjan(point);
+			if (low[point] >= dfn[pos]) {
+				child++;
+				if (pos != root || child > 1) {
+					cut[pos] = true;
+				}
+			}
+			low[pos] = min(low[pos], low[point]);
+		}
+	}
+	if (low[pos] == dfn[pos]) {
+		scc[pos] = pos;
+		while (in.top() != pos) {
+			scc[in.top()] = pos;
+			check[in.top()] = true;
+			in.pop();
+		}
+		check[pos] = true;
+		in.pop();
+	}
+}
+int main() {
+	cin >> n >> m;
+	link.resize(n + 1);
+	low.resize(n + 1);
+	dfn.resize(n + 1);
+	scc.resize(n + 1);
+	check.resize(n + 1);
+	for (ll q = 1; q <= m; ++q) {
+		ll a, b;
+		cin >> a >> b;
+		link[a].push_back(b);
+	}
+	for (root = 1; root <= n; ++root) {
+		if (!dfn[root]) {
+			tarjan(root);
+		}
+	}
+}

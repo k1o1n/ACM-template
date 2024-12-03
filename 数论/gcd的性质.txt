@@ -1,0 +1,2 @@
+gcd(a,b,c,...,z)=gcd(a,b−a,c−b,...,z−y)
+d(ij)=Σ(x|i)Σ(y|j)[gcd(x,y)=1]，d(x)表示x的因子的个数

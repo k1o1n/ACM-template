@@ -1,0 +1,66 @@
+你喜欢名为“Set”的卡牌游戏。每张卡包含k个特征，每个特征的值都来自集合{0,1,2}。牌组包含所有可能的卡牌变体，也就是说，总共有3^k张不同的卡牌。如果三个卡牌在某个特征上的值相同或者两两不同，则该特征被称为好的。如所有k个特征都是好的，那么这三张卡牌被称为一个集合。例如，卡牌(0,0,0)、(0,2,1)和(0,1,2)构成一个集合，但卡牌(0,2,2)、(2,1,2)和(1,2,0)不构成集合，因为例如最后一个特征不是好的。如果一组五张卡牌中严格包含多于一个的集合，那么这组卡牌被称为元集合。在给定的n张不同的卡牌中，有多少个元集合？
+输入
+输入的第一行包含两个整数n和k（1≤n≤1000, 1≤k≤20）——桌上的卡牌数量和卡牌特征的数量。接下来n行描述卡牌。
+每行描述一张卡牌，包含k个整数ci,1, ci,2, …, ci,k（0≤ci,j≤2）——卡牌特征。保证所有卡牌都是不同的。
+输出
+输出一个整数——元集合的数量。
+
+分析：
+首先可以证明一个元集合里面有且仅有两个集合，并且这两个集合只共享一个卡牌。
+故枚举所有的卡排对（i，j）利用这个卡排队生成集合的另一张卡牌，将生成的卡牌视为该集合的中心，记录其次数
+完成上述操作后遍历所有卡牌，将卡牌作为中心卡牌筛选出集合，贡献为a*（a-1）/2，a为当前卡牌作为中心卡牌时拥有的集合数
+
+#include<iostream>
+#include<vector>
+#include<map>
+#define ll long long
+using namespace std;
+ll f(ll a, ll b) {
+	if (a == b) {
+		return a;
+	}
+	else {
+		if (a > b) {
+			ll temp = a;
+			a = b;
+			b = temp;
+		}
+		if (a == 0) {
+			if (b == 1) {
+				return 2;
+			}
+			else {
+				return 1;
+			}
+		}
+		else {
+			return 0;
+		}
+	}
+}
+int main() {
+	ll n, k, answer = 0;
+	cin >> n >> k;
+	vector<vector<ll>>arr(n);
+	map<vector<ll>, ll>check;
+	for (ll q = 0; q < n; ++q) {
+		arr[q].resize(k);
+		for (ll i = 0; i < k; ++i) {
+			cin >> arr[q][i];
+		}
+	}
+	for (ll q = 0; q < n; ++q) {
+		for (ll i = q + 1; i < n; ++i) {
+			vector<ll>test;
+			for (ll j = 0; j < k; ++j) {
+				test.push_back(f(arr[q][j],arr[i][j]));
+			}
+			check[test]++;
+		}
+	}
+	for (ll q = 0; q < n; ++q) {
+		ll num = check[arr[q]];
+		answer += num * (num - 1) / 2;
+	}
+	cout << answer;
+}

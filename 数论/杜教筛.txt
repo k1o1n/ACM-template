@@ -1,0 +1,132 @@
+用于解决
+s(n)=Σ(i=1~n)f(i)，f为积性函数的问题
+解法：构造积性函数g，使得f*g的前缀和容易计算*为卷积
+得出：
+g(1)s(n)=Σ(i=1~n)(f*g)(i)-Σ(i=2~n)g(i)s(n/i)
+证明：
+构造积性函数g，则：
+Σ(i=1~n)(f*g)(i)=Σ(i=1~n)Σ(d|i)f(i/d)g(d)=Σ(i=1~n)Σ(d=1~n)(d|i)f(i/d)g(d)=Σ(d=1~n)Σ(i=1~n)(d|i)f(i/d)g(d)=Σ(d=1~n)Σ(id=1~n)(d|id)f(id/d)g(d)=Σ(d=1~n)Σ(id=1~n)f(i)g(d)=Σ(d=1~n)Σ(i=1~n/d)f(i)g(d)
+=Σ(d=1~n)g(d)Σ(i=1~n/d)f(i)=Σ(d=1~n)g(d)s(n/d)=Σ(d=2~n)g(d)s(n/d)+g(1)s(n)
+故Σ(i=1~n)(f*g)(i)=Σ(d=2~n)g(d)s(n/d)+g(1)s(n)
+故Σ(i=1~n)(f*g)(i)-Σ(d=2~n)g(d)s(n/d)=g(1)s(n)
+即g(1)s(n)=Σ(i=1~n)(f*g)(i)-Σ(d=2~n)g(d)s(n/d)
+即g(1)s(n)=Σ(i=1~n)(f*g)(i)-Σ(i=2~n)g(i)s(n/i)
+
+当s函数代表欧拉函数f前缀和时：
+构造g函数为1函数（即1(n)=1）
+由f*1=id（即id(n)=n）可知
+g(1)s(n)=s(n)
+Σ(i=1~n)(f*g)(i)-Σ(i=2~n)g(i)s(n/i)=Σ(i=1~n)id(i)-Σ(i=2~n)s(n/i)
+故s(n)=Σ(i=1~n)id(i)-Σ(i=2~n)s(n/i)=(1+n)*n/2-Σ(i=2~n)s(n/i)
+Σ(i=2~n)s(n/i)可以使用记忆化搜索+分块处理
+
+当s函数代表莫比乌斯函数μ前缀和时：
+构造g函数为1函数（即1(n)=1）
+由μ*1=ε（即ε(n)=[n=1]）可知
+g(1)s(n)=s(n)
+Σ(i=1~n)(f*g)(i)-Σ(i=2~n)g(i)s(n/i)=Σ(i=1~n)ε(i)-Σ(i=2~n)s(n/i)
+故s(n)=Σ(i=1~n)ε(i)-Σ(i=2~n)s(n/i)=1-Σ(i=2~n)s(n/i)
+Σ(i=2~n)s(n/i)可以使用记忆化搜索+分块处理
+
+杜教筛求欧拉函数前缀和：（使用euler_sum函数前先调用work_prime函数）
+#define ll long long
+#define NUMBER 5000000
+#include<vector>
+#include<unordered_map>
+using namespace std;
+bool prime_check[NUMBER + 1]{};
+ll euler[NUMBER + 1]{};
+vector<ll>prime;
+unordered_map<ll, ll>act_euler;
+void work_prime() {
+	act_euler[1] = 1;
+	for (ll q = 2; q <= NUMBER; ++q) {
+		if (!prime_check[q]) {
+			prime.push_back(q);
+			euler[q] = q - 1;
+		}
+		for (ll i = 0; i < prime.size() && prime[i] * q <= NUMBER; ++i) {
+			prime_check[prime[i] * q] = true;
+			if (q % prime[i]) {
+				euler[prime[i] * q] = euler[prime[i]] * euler[q];
+			}
+			else {
+				euler[prime[i] * q] = euler[q] * prime[i];
+				break;
+			}
+		}
+	}
+	euler[1] = 1;
+	for (ll q = 1; q <= NUMBER; ++q) {
+		euler[q] += euler[q - 1];
+	}
+}
+ll euler_sum(ll n) {
+	if (act_euler.find(n) != act_euler.end()) {
+		return act_euler[n];
+	}
+	if (n <= NUMBER) {
+		return euler[n];
+	}
+	ll answer = (1 + n) * n / 2;
+	ll done = 1;
+	while (true) {
+		done++;
+		if (done > n) {
+			break;
+		}
+		ll val = n / done;
+		ll en = n / val;
+		answer -= euler_sum(val) * (en - done + 1);
+		done = en;
+	}
+	return act_euler[n] = answer;
+}
+
+杜教筛求莫比乌斯函数前缀和：（使用mu_sum函数前先调用get_mu函数）
+ll p[NUMBER], vis[NUMBER], cnt;
+ll mu[NUMBER];
+void get_mu(ll n) {//筛法求莫比乌斯函数
+	act_mu[1] = 1;
+	mu[1] = 1;
+	for (int i = 2; i <= n; i++) {
+		if (!vis[i]) {
+			p[++cnt] = i;
+			mu[i] = -1;
+		}
+		for (int j = 1; i * p[j] <= n; j++) {
+			int m = i * p[j];
+			vis[m] = 1;
+			if (i % p[j] == 0) {
+				mu[m] = 0;
+				break;
+			}
+			else
+				mu[m] = -mu[i];
+		}
+	}
+	for (ll q = 1; q <= NUMBER; ++q) {
+		mu[q] += mu[q - 1];
+	}
+}
+ll mu_sum(ll n) {
+	if (act_mu.find(n) != act_mu.end()) {
+		return act_mu[n];
+	}
+	if (n <= NUMBER) {
+		return mu[n];
+	}
+	ll answer = 1;
+	ll done = 1;
+	while (true) {
+		done++;
+		if (done > n) {
+			break;
+		}
+		ll val = n / done;
+		ll en = n / val;
+		answer -= mu_sum(val) * (en - done + 1);
+		done = en;
+	}
+	return act_mu[n] = answer;
+}

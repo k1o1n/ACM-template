@@ -1,0 +1,72 @@
+给定一组数据，求逆序对数目。（逆序对：对于数组arr，arr[i]>arr[j]且i<j则称arr[i]、arr[j]为一对逆序对）
+输入要求：
+第一行：一个数n
+第二行：n个数，代表数组arr中元素
+
+分析：使用归并排序思想，边归并边求逆序对数目
+对于关键一步的理解：
+假设两组数据a、b均为单调递增，将a、b合成为新的数据c（顺序为ab），则可求逆序对
+例：
+a：456
+b：123
+合成c：456123
+（使用双指针维护）对c使用归并排序：
+456 123
+1、放1。a中仍有3个，故逆序对数目+3
+2、放2。a中仍有3个，故逆序对数目+3
+以此类推。
+
+
+#include<iostream>
+#include<vector> 
+using namespace std;
+vector<long long>arr;
+long long answer=0;
+void sort(int l,int r){
+	if(r-l){
+		if(r-l-1){
+			sort(l,(l+r)/2);
+			sort(1+(l+r)/2,r);
+			vector<int>now;
+			long long i=l,j=1+(l+r)/2,mid=j;
+			while(i<mid&&j<r+1){
+				if(arr[i]>arr[j]){
+					now.push_back(arr[j++]);
+					answer+=mid-i;//关键一步
+				}
+				else{
+					now.push_back(arr[i++]);
+				}
+			}	
+			while(i<mid){
+				now.push_back(arr[i++]);	
+			}
+			while(j<r+1){
+				now.push_back(arr[j++]);
+			}
+			for(int q=0;q<now.size();++q){
+				arr[q+l]=now[q];
+			}
+		}
+		else{
+			if(arr[l]>arr[r]){
+				++answer;
+				arr[r]+=arr[l];
+				arr[l]=arr[r]-arr[l];
+				arr[r]-=arr[l];
+			}
+		}
+	}
+	return;
+} 
+int main(){
+	long long n;
+	cin>>n;
+	for(int q=0,input;q<n;++q){
+		cin>>input;
+		arr.push_back(input);
+	}
+	sort(0,n-1);
+	cout<<answer<<endl;
+	return 0;
+}
