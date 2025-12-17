@@ -1,0 +1,10 @@
+float compute(float x, float y) {
+    return x * y + 1.5;
+}
+
+int main() {
+    float a = 3.14;
+    float b = 2.0;
+    float result = compute(a, b);
+    return 0;
+}
